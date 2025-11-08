@@ -40,6 +40,7 @@ const ReportsPage = () => {
     }
   };
 
+  // API kancaları (useApi)
   const { data: companies, loading: companiesLoading, error: companiesError } = useApi<Company[]>('/core/companies/');
   const { data: brands, loading: brandsLoading, error: brandsError } = useApi<Brand[]>(selectedCompany ? `/core/brands/?company=${selectedCompany}` : null);
   const { data: branches, loading: branchesLoading, error: branchesError } = useApi<Branch[]>(selectedBrand ? `/core/branches/?brand=${selectedBrand}` : null);
@@ -56,14 +57,14 @@ const ReportsPage = () => {
   }, [reportsData]);
 
   if (companiesError || brandsError || branchesError || peopleError) {
-    return <div>Error loading data.</div>;
+    return <div>Veri yüklenirken hata oluştu.</div>;
   }
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Raporlar</h1>
 
-      {/* Filter Bar */}
+      {/* Filtre Çubuğu */}
       <div className="flex flex-wrap gap-4 mb-4 p-4 bg-card rounded-lg">
         <Select onValueChange={setSelectedCompany}>
           <SelectTrigger className="w-full md:w-[180px]">
@@ -111,7 +112,6 @@ const ReportsPage = () => {
 
         <DatePicker
           selected={startDate}
-          // DÜZELTME 1: Parametreye tür eklendi
           onChange={(date: Date | null) => setStartDate(date)}
           selectsStart
           startDate={startDate}
@@ -122,12 +122,11 @@ const ReportsPage = () => {
 
         <DatePicker
           selected={endDate}
-          // DÜZELTME 2: Parametreye tür eklendi
           onChange={(date: Date | null) => setEndDate(date)}
           selectsEnd
           startDate={startDate}
           endDate={endDate}
-          minDate={startDate}
+          minDate={startDate || undefined}
           placeholderText="Bitiş Tarihi"
           className="w-full md:w-[180px]"
         />
@@ -147,7 +146,7 @@ const ReportsPage = () => {
         <Button onClick={refetch}>Filtrele</Button>
       </div>
 
-      {/* View Switcher and Create Button */}
+      {/* Görünüm Değiştirici ve Oluştur Butonu */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
           <Switch
@@ -160,6 +159,7 @@ const ReportsPage = () => {
         <Button onClick={() => setIsModalOpen(true)}>Yeni Rapor Oluştur</Button>
       </div>
 
+      {/* Yeni Rapor Oluşturma Modalı */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-card p-8 rounded-lg w-full max-w-2xl">
@@ -179,7 +179,6 @@ const ReportsPage = () => {
               <div className="grid grid-cols-2 gap-4">
                 <DatePicker
                   selected={newReport.start_date}
-                  // DÜZELTME 3: Parametreye tür eklendi
                   onChange={(date: Date | null) => setNewReport({ ...newReport, start_date: date })}
                   selectsStart
                   startDate={newReport.start_date}
@@ -189,12 +188,11 @@ const ReportsPage = () => {
                 />
                 <DatePicker
                   selected={newReport.end_date}
-                  // DÜZELTME 4: Parametreye tür eklendi
                   onChange={(date: Date | null) => setNewReport({ ...newReport, end_date: date })}
                   selectsEnd
                   startDate={newReport.start_date}
                   endDate={newReport.end_date}
-                  minDate={newReport.start_date}
+                  minDate={newReport.start_date || undefined}
                   placeholderText="Bitiş Tarihi"
                   className="w-full"
                 />
@@ -214,7 +212,7 @@ const ReportsPage = () => {
         </div>
       )}
 
-      {/* Content Area */}
+      {/* İçerik Alanı */}
       {viewMode === 'card' ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {reports.map((report) => (
