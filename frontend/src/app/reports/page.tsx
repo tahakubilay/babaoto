@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useApi } from '@/hooks/useApi';
+import { api } from '@/lib/api';
 import { Company, Brand, Branch, Person } from '@/types';
 
 const ReportsPage = () => {
@@ -17,8 +18,17 @@ const ReportsPage = () => {
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
+  const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
+  const [reportType, setReportType] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [reports, setReports] = useState<any[]>([]);
 
-  const [newReport, setNewReport] = useState({ description: '', report_type: '', start_date: null, end_date: null });
+  const [newReport, setNewReport] = useState({ 
+    description: '', 
+    report_type: '', 
+    start_date: null as Date | null, 
+    end_date: null as Date | null 
+  });
 
   const handleCreateReport = async () => {
     try {
@@ -34,8 +44,6 @@ const ReportsPage = () => {
   const { data: brands, loading: brandsLoading, error: brandsError } = useApi<Brand[]>(selectedCompany ? `/core/brands/?company=${selectedCompany}` : null);
   const { data: branches, loading: branchesLoading, error: branchesError } = useApi<Branch[]>(selectedBrand ? `/core/branches/?brand=${selectedBrand}` : null);
   const { data: people, loading: peopleLoading, error: peopleError } = useApi<Person[]>(selectedBranch ? `/core/people/?branch=${selectedBranch}` : null);
-  const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
-  const [reportType, setReportType] = useState<string | null>(null);
 
   const { data: reportsData, loading: reportsLoading, error: reportsError, refetch } = useApi<any[]>(
     `/reports/?company=${selectedCompany || ''}&brand=${selectedBrand || ''}&branch=${selectedBranch || ''}&person=${selectedPerson || ''}&type=${reportType || ''}&start_date=${startDate?.toISOString() || ''}&end_date=${endDate?.toISOString() || ''}`
@@ -63,7 +71,7 @@ const ReportsPage = () => {
           </SelectTrigger>
           <SelectContent>
             {companiesLoading ? <SelectItem value="loading" disabled>Yükleniyor...</SelectItem> : companies?.map((company) => (
-              <SelectItem key={company.id} value={company.id.toString()}>{company.name}</SelectItem>
+              <SelectItem key={company.id} value={company.id.toString()}>{company.title}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -96,14 +104,15 @@ const ReportsPage = () => {
           </SelectTrigger>
           <SelectContent>
             {peopleLoading ? <SelectItem value="loading" disabled>Yükleniyor...</SelectItem> : people?.map((person) => (
-              <SelectItem key={person.id} value={person.id.toString()}>{person.first_name} {person.last_name}</SelectItem>
+              <SelectItem key={person.id} value={person.id.toString()}>{person.full_name}</SelectItem>
             ))}
           </SelectContent>
         </Select>
 
         <DatePicker
           selected={startDate}
-          onChange={(date) => setStartDate(date)}
+          // DÜZELTME 1: Parametreye tür eklendi
+          onChange={(date: Date | null) => setStartDate(date)}
           selectsStart
           startDate={startDate}
           endDate={endDate}
@@ -113,7 +122,8 @@ const ReportsPage = () => {
 
         <DatePicker
           selected={endDate}
-          onChange={(date) => setEndDate(date)}
+          // DÜZELTME 2: Parametreye tür eklendi
+          onChange={(date: Date | null) => setEndDate(date)}
           selectsEnd
           startDate={startDate}
           endDate={endDate}
@@ -151,7 +161,7 @@ const ReportsPage = () => {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-card p-8 rounded-lg w-full max-w-2xl">
             <h2 className="text-2xl font-bold mb-4">Yeni Rapor Oluştur</h2>
             <div className="grid grid-cols-1 gap-4">
@@ -169,7 +179,8 @@ const ReportsPage = () => {
               <div className="grid grid-cols-2 gap-4">
                 <DatePicker
                   selected={newReport.start_date}
-                  onChange={(date) => setNewReport({ ...newReport, start_date: date })}
+                  // DÜZELTME 3: Parametreye tür eklendi
+                  onChange={(date: Date | null) => setNewReport({ ...newReport, start_date: date })}
                   selectsStart
                   startDate={newReport.start_date}
                   endDate={newReport.end_date}
@@ -178,7 +189,8 @@ const ReportsPage = () => {
                 />
                 <DatePicker
                   selected={newReport.end_date}
-                  onChange={(date) => setNewReport({ ...newReport, end_date: date })}
+                  // DÜZELTME 4: Parametreye tür eklendi
+                  onChange={(date: Date | null) => setNewReport({ ...newReport, end_date: date })}
                   selectsEnd
                   startDate={newReport.start_date}
                   endDate={newReport.end_date}
